@@ -1,3 +1,7 @@
+Finite volume WENO code for the 1D compressible Euler equations of fluid dynamics.
+
+It was initially a matlab tool that was turned into python (cf. folders).
+
 A. To use the python code:
 1. Open 'euler_hb.py', the main file.
 2. In the Configuration section, you can import a pre-defined test
