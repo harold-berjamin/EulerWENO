@@ -24,9 +24,12 @@ def A(u):
     p = (gam-1) * (u[2,:] - 0.5*u[0,:]*v**2)
     a = np.sqrt(gam*p/u[0,:])
     N = len(u[0,:])
-    jac = np.array([[0]*N, 0.5*(gam-3)*v**2, 0.5*(gam-2)*v**3 - a**2*v/(gam-1), 
-                    [1]*N, (3-gam)*v, 0.5*(3-2*gam)*v**2 + a**2/(gam-1), 
-                    [0]*N, (gam-1)*[1]*N, gam*v])
+    # jac = np.array([[0]*N, 0.5*(gam-3)*v**2, 0.5*(gam-2)*v**3 - a**2*v/(gam-1), 
+    #                [1]*N, (3-gam)*v, 0.5*(3-2*gam)*v**2 + a**2/(gam-1), 
+    #                [0]*N, (gam-1)*np.ones(N), gam*v])
+    jac = np.array([[0]*N, [1]*N, [0]*N, 
+                    0.5*(gam-3)*v**2, (3-gam)*v, (gam-1)*np.ones(N), 
+                    0.5*(gam-2)*v**3 - a**2*v/(gam-1), 0.5*(3-2*gam)*v**2 + a**2/(gam-1), gam*v])
     return jac
 
 def EigA(u):
@@ -110,7 +113,7 @@ def OutgoingBC(u):
     return v
 
 # ----------------------------------------------------------------
-# First-order schemes
+# Low-order schemes
 # ----------------------------------------------------------------
 
 def DoNone(u):
@@ -118,16 +121,27 @@ def DoNone(u):
     up05p = np.roll(u, -1, axis=1)
     return up05m, up05p
 
-def LxF(u, inter): # LLF flux
+def LxF(u, inter, dt, dx): # LLF flux
     up05m, up05p = inter(u)
     vals, _ = EigA(u)
     amax = np.max(np.abs(vals[2,:] - vals[1,:]) + np.abs(vals[1,:]))
     fp05 = 0.5 * (f(up05m) + f(up05p) - amax * (up05p - up05m))
     return fp05
 
-def RHS(flux, inter, BC, dx):
+def LxW(u, inter, dt, dx): # LxW flux
+    Nx = len(u[0,:])
+    up05m, up05p = inter(u)
+    fp05 = 0.5 * (f(up05m) + f(up05p))
+    df05 = 0.5 * (f(up05p) - f(up05m))
+    Ap05 = A(0.5*(up05m + up05p))
+    for i in range(Nx):
+        Aloc = np.reshape(Ap05[:,i], (3, 3))
+        fp05[:,i] = fp05[:,i] - dt/dx * Aloc @ df05[:,i]
+    return fp05
+
+def RHS(flux, inter, BC, dt, dx):
     def my_func(u):
-        fp05 = flux(BC(u), inter)
+        fp05 = flux(BC(u), inter, dt, dx)
         fm05 = np.roll(fp05, 1, axis=1)
         df = BC(-(fp05 - fm05)/dx)
         return df

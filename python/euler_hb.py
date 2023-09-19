@@ -12,14 +12,14 @@ from euler_utils import *
 from euler_tests import *
 
 """
-# Custom job parameters
-flux = LxF # LxF
-inter = WENO_Roe # DoNone, WENO, WENO_Roe
-integ = RK3 # RK1, RK3, RK4 <!> RK4 requires smaller time-steps by a factor 2/3 (cf. CFL)
-BC = PeriodicBC # OutgoingBC, PeriodicBC
-u0, pb = Density() # Density(), Riemann(rhoJ,uJ,pJ)
-xlims = np.array([0, 2]) # Physical domain
-Tf = 2 # Final time
+# Custom job parameters (overwrites pre-defined test case)
+flux = LxW # LxF, LxW
+inter = DoNone # DoNone, WENO, WENO_Roe
+integ = RK1 # RK1, RK3, RK4 <!> RK4 requires smaller time-steps by a factor 2/3 (cf. CFL)
+# BC = PeriodicBC # OutgoingBC, PeriodicBC
+# u0, pb = Density() # Density(), Riemann(rhoJ,uJ,pJ)
+# xlims = np.array([0, 2]) # Physical domain
+# Tf = 2 # Final time
 """
 
 # Graphics
@@ -40,9 +40,6 @@ dx = np.abs( (xlims[1]-xlims[0])/Nx )
 x = np.linspace(xlims[0]-3*dx, xlims[1]+2*dx, Nx+6)
 Nx = Nx+6
 
-# Evolution right-hand side
-L = RHS(flux, inter, BC, dx)
-
 # Initial condition averaging
 u = BC(cellav(u0, x, dx))
 
@@ -50,6 +47,9 @@ u = BC(cellav(u0, x, dx))
 vals, _ = EigA(u)
 amax = np.max(np.max(np.abs(vals)))
 dt = Co * dx/amax
+
+# Evolution right-hand side
+L = RHS(flux, inter, BC, dt, dx)
 
 # Graphics initialisation
 if plots:
@@ -76,6 +76,10 @@ while t<Tf:
     vals, _ = EigA(u)
     amax = np.max(np.max(np.abs(vals)))
     dt = Co * dx/amax
+
+    # Evolution right-hand side
+    if flux == LxW:
+        L = RHS(flux, inter, BC, dt, dx)
 
     # Graphics update
     if (plots > 0) and (time.time() - tPlot > 1.5):

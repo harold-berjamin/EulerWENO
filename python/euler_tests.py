@@ -2,7 +2,7 @@ import numpy as np
 from euler_utils import *
 
 # Common parameters
-flux = LxF # LxF
+flux = LxF # LxF, LxW
 inter = WENO_Roe # DoNone, WENO, WENO_Roe
 integ = RK4 # RK1, RK3, RK4 <!> RK4 requires smaller time-steps by a factor 2/3 (cf. CFL)
 
@@ -27,9 +27,9 @@ elif test==2:
     uJ = np.array([0, 0])       # uJ = np.array([0, 0])
     pJ = np.array([1, 0.1])     # pJ = np.array([1, 0.1])
     # Custom
-    rhoJ = np.array([0.445, 0.5])
-    uJ = np.array([0.698, 0])
-    pJ = np.array([3.528, 0.571])
+    rhoJ = np.array([1, 0.125])
+    uJ = np.array([0, 0])
+    pJ = np.array([1, 0.1])
     # Problem settings
     BC = OutgoingBC # OutgoingBC, PeriodicBC
     u0, pb = Riemann(rhoJ,uJ,pJ) # Density(), Riemann(rhoJ,uJ,pJ)
