@@ -244,18 +244,20 @@ def RK4(L, u, dt):
     up = (-u + u1 + 2*u2 + u3 + 0.5*dt*L(u3))/3
     return up
 
-def RKQuant(L, u, dt): # clone of RK4 with 1D data format
+"""
+def RK1D(L, u, dt): # clone of RK4 with 1D data format
     # reshaping input data
     Nx = len(u[0,:])
-    uQ = np.reshape(u, (1,3*Nx))[0,:]
-    def LQ(uQ):
-        u = np.reshape(uQ, (3,Nx))
+    u1D = np.reshape(u, (1,3*Nx))[0,:]
+    def L1D(u1D):
+        u = np.reshape(u1D, (3,Nx))
         rhs = np.reshape(L(u), (1,3*Nx))[0,:]
         return rhs
     # RK4 iterations
-    up = RK4(LQ, uQ, dt)
+    up = RK4(L1D, u1D, dt)
     # reshaping output data
     return np.reshape(up, (3,Nx))
+"""
 
 # ----------------------------------------------------------------
 # Exact Riemann solution
