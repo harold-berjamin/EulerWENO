@@ -37,7 +37,7 @@ Co = 0.6 # CFL
 t = 0
 n = 0
 dx = np.abs( (xlims[1]-xlims[0])/Nx )
-x = np.linspace(xlims[0]-3*dx, xlims[1]+2*dx, Nx+6)
+x = np.linspace(xlims[0]-2.5*dx, xlims[1]+2.5*dx, Nx+6)
 Nx = Nx+6
 
 # Initial condition averaging

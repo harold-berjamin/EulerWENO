@@ -7,7 +7,7 @@ inter = WENO_Roe # DoNone, WENO, WENO_Roe
 integ = RK4 # RK1, RK3, RK4 <!> RK4 requires smaller time-steps by a factor 2/3 (cf. CFL)
 
 # Test selection
-test = 2 # 1, 2
+test = 1 # 1, 2
 
 # Job parameters
 if test==1:
