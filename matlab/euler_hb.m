@@ -23,7 +23,7 @@ global dt dx
 t = 0;
 n = 0;
 dx = abs( (xlims(end)-xlims(1))/Nx );
-x = linspace(xlims(1)-3*dx,xlims(end)+2*dx,Nx+6);
+x = linspace(xlims(1)-2.5*dx,xlims(end)+2.5*dx,Nx+6);
 Nx = Nx+6;
 
 % Initial condition averaging
