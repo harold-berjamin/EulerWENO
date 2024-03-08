@@ -2,17 +2,17 @@
 format long
 
 % Job parameters
-plots = 0; % 0, 1, 2, 3
-flux = @LxF; % @LxF
+plots = 1; % 0, 1, 2, 3
+flux = @Osher; % @LxF, @Osher
 inter = @WENO_Roe; % @None, @WENO, @WENO_Roe
 integ = @RK4; % @RK1, @RK3, @RK4
-BC = @PeriodicBC; % @OutgoingBC, @PeriodicBC
-u0 = @Density; % @Density, @Riemann
+BC = @OutgoingBC; % @OutgoingBC, @PeriodicBC
+u0 = @Riemann; % @Density, @Riemann
 % <!> @RK4 requires smaller time-steps by a factor 2/3 (cf. CFL section below)
 
 % Mesh size, final time
-xlims = [0, 2];
-Nx = 800;
+xlims = [-5, 5];
+Nx = 100;
 Tf = 2;
 
 global gam % heat capacity ratio
@@ -140,6 +140,18 @@ function [vals, vecs] = EigA(u)
         ones(1,N); v+a; H+v.*a];
 end
 
+function mat = aA(u)
+    [vals, vecs] = EigA(u);
+    N = length(u(1,:));
+    mat = zeros(9,N);
+    for i=1:N
+        aLamb = diag(abs(vals(:,i)));
+        R = reshape(vecs(:,i),3,3);
+        aA = R*aLamb*inv(R);
+        mat(:,i) = reshape(aA,9,1);
+    end
+end
+
 % Initial conditions
 
 function u0 = Density(x) % Density perturbation
@@ -213,6 +225,21 @@ function fp05 = LxF(u,inter) % Lax-Friedrichs flux
     [vals, ~] = EigA(u);
     amax = max(abs(vals(3,:)-vals(2,:)) + abs(vals(2,:)));
     fp05 = 0.5*(f(up05m) + f(up05p) - amax*(up05p - up05m));
+end
+
+function fp05 = Osher(u,inter) % Osher flux
+    [up05m, up05p] = inter(u);
+    du = up05p - up05m;
+    u1 = up05m + (0.5-sqrt(15)/10)*du;
+    u2 = up05m + 0.5*du;
+    u3 = up05m + (0.5+sqrt(15)/10)*du;
+    iA = (5*aA(u1) + 8*aA(u2) + 5*aA(u3))/18;
+    N = length(du(1,:));
+    fp05 = zeros(3,N);
+    for i=1:N
+        iAr = reshape(iA(:,i),3,3);
+        fp05(:,i) = 0.5*(f(up05m(:,i)) + f(up05p(:,i)) - iAr*du(:,i));
+    end
 end
 
 function up = RK1(u,flux,inter,BC)
