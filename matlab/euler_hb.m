@@ -3,7 +3,7 @@ format long
 
 % Job parameters
 plots = 1; % 0, 1, 2, 3
-flux = @Osher; % @LxF, @Osher
+flux = @LxF; % @LxF, @Osher
 inter = @WENO_Roe; % @None, @WENO, @WENO_Roe
 integ = @RK4; % @RK1, @RK3, @RK4
 BC = @OutgoingBC; % @OutgoingBC, @PeriodicBC
@@ -11,9 +11,9 @@ u0 = @Riemann; % @Density, @Riemann
 % <!> @RK4 requires smaller time-steps by a factor 2/3 (cf. CFL section below)
 
 % Mesh size, final time
-xlims = [-5, 5];
-Nx = 100;
-Tf = 2;
+xlims = [-0.5, 0.5];
+Nx = 200;
+Tf = 0.16;
 
 global gam % heat capacity ratio
 gam = 1.4;
@@ -235,10 +235,10 @@ function fp05 = Osher(u,inter) % Osher flux
     u3 = up05m + (0.5+sqrt(15)/10)*du;
     iA = (5*aA(u1) + 8*aA(u2) + 5*aA(u3))/18;
     N = length(du(1,:));
-    fp05 = zeros(3,N);
+    fp05 = 0.5*(f(up05m) + f(up05p));
     for i=1:N
         iAr = reshape(iA(:,i),3,3);
-        fp05(:,i) = 0.5*(f(up05m(:,i)) + f(up05p(:,i)) - iAr*du(:,i));
+        fp05(:,i) = fp05(:,i) - 0.5*iAr*du(:,i);
     end
 end
 

@@ -24,9 +24,6 @@ def A(u):
     p = (gam-1) * (u[2,:] - 0.5*u[0,:]*v**2)
     a = np.sqrt(gam*p/u[0,:])
     N = len(u[0,:])
-    # jac = np.array([[0]*N, 0.5*(gam-3)*v**2, 0.5*(gam-2)*v**3 - a**2*v/(gam-1), 
-    #                [1]*N, (3-gam)*v, 0.5*(3-2*gam)*v**2 + a**2/(gam-1), 
-    #                [0]*N, (gam-1)*np.ones(N), gam*v])
     jac = np.array([[0]*N, [1]*N, [0]*N, 
                     0.5*(gam-3)*v**2, (3-gam)*v, (gam-1)*np.ones(N), 
                     0.5*(gam-2)*v**3 - a**2*v/(gam-1), 0.5*(3-2*gam)*v**2 + a**2/(gam-1), gam*v])
@@ -43,6 +40,17 @@ def EigA(u):
                      [1]*N, v, 0.5*v**2, 
                      [1]*N, v+a, H+v*a])
     return vals, vecs
+
+def aA(u):
+    vals, vecs = EigA(u)
+    N = len(u[0,:])
+    mat = np.zeros((9,N))
+    for i in range(N):
+        aLamb = np.diag(np.absolute(vals[:,i]))
+        R = np.reshape(vecs[:,i], (3,3), order='F')
+        aA = np.dot(np.dot(R, aLamb), np.linalg.inv(R))
+        mat[:,i] = np.reshape(aA, (9,), order='F')
+    return mat
 
 # ----------------------------------------------------------------
 # Initial conditions
@@ -126,6 +134,20 @@ def LxF(u, inter, dt, dx): # LLF flux
     vals, _ = EigA(u)
     amax = np.max(np.abs(vals[2,:] - vals[1,:]) + np.abs(vals[1,:]))
     fp05 = 0.5 * (f(up05m) + f(up05p) - amax * (up05p - up05m))
+    return fp05
+
+def Osher(u, inter, dt, dx): # Osher flux
+    Nx = len(u[0,:])
+    up05m, up05p = inter(u)
+    du = up05p - up05m
+    u1 = up05m + (0.5-np.sqrt(15)/10)*du
+    u2 = up05m + 0.5*du
+    u3 = up05m + (0.5+np.sqrt(15)/10)*du
+    iA = (5*aA(u1) + 8*aA(u2) + 5*aA(u3))/18
+    fp05 = 0.5*(f(up05m) + f(up05p))
+    for i in range(Nx):
+        iAr = np.reshape(iA[:,i],(3,3),order='F')
+        fp05[:,i] = fp05[:,i] - 0.5* iAr @ du[:,i]
     return fp05
 
 def LxW(u, inter, dt, dx): # LxW flux

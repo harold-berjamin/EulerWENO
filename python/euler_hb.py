@@ -13,7 +13,7 @@ from euler_tests import *
 
 """
 # Custom job parameters (overwrites pre-defined test case)
-flux = LxW # LxF, LxW
+flux = LxW # LxF, Osher, LxW
 inter = DoNone # DoNone, WENO, WENO_Roe
 integ = RK1 # RK1, RK3, RK4 <!> RK4 requires smaller time-steps by a factor 2/3 (cf. CFL)
 # BC = PeriodicBC # OutgoingBC, PeriodicBC
