@@ -40,9 +40,6 @@ dx = np.abs( (xlims[1]-xlims[0])/Nx )
 x = np.linspace(xlims[0]-2.5*dx, xlims[1]+2.5*dx, Nx+6)
 Nx = Nx+6
 
-# Evolution right-hand side
-L = RHS(flux, inter, BC, dx)
-
 # Initial condition averaging
 u = BC(cellav(u0, x, dx))
 
@@ -50,6 +47,9 @@ u = BC(cellav(u0, x, dx))
 vals, _ = EigA(u)
 amax = np.max(np.max(np.abs(vals)))
 dt = Co * dx/amax
+
+# Evolution right-hand side
+L = RHS(flux, inter, BC, dt, dx)
 
 # Graphics initialisation
 if plots:
