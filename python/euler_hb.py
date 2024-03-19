@@ -77,10 +77,6 @@ while t<Tf:
     amax = np.max(np.max(np.abs(vals)))
     dt = Co * dx/amax
 
-    # Evolution right-hand side
-    if flux == LxW:
-        L = RHS(flux, inter, BC, dt, dx)
-
     # Graphics update
     if (plots > 0) and (time.time() - tPlot > 1.5):
         # intermediate solution
