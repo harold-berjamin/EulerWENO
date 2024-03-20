@@ -280,6 +280,17 @@ def RK1D(L, u, dt): # clone of RK4 with 1D data format
     # reshaping output data
     return np.reshape(up, (3,Nx))
 """
+# ----------------------------------------------------------------
+# Conservative - primitive conversion
+# ----------------------------------------------------------------
+
+def Cons2Prim(v):
+    u = np.array([v[0,:], v[1,:]/v[0,:], (gam-1)*(v[2,:] - 0.5*v[1,:]**2/v[0,:])])
+    return u
+
+def Prim2Cons(u):
+    v = np.array([u[0,:], u[0,:]*u[1,:], 0.5*u[0,:]*u[1,:]**2 + u[2,:]/(gam-1)])
+    return v
 
 # ----------------------------------------------------------------
 # Exact Riemann solution
