@@ -66,13 +66,13 @@ def Density():
             Nx = len(x)
             u = np.ones(Nx)
             p = np.ones(Nx)
-        u0 = np.array([rho, rho*u, 0.5*rho*u**2 + p/(gam-1)])
+        u0 = Prim2Cons(np.array([rho,u,p]))
         return u0
     return my_func, 'Density'
 
 def Riemann(rhoJ,uJ,pJ):
     # Initial data
-    UJ = np.array([rhoJ, rhoJ*uJ, 0.5*rhoJ*uJ**2 + pJ/(gam-1)])
+    UJ = Prim2Cons(np.array([rhoJ,uJ,pJ]))
     def my_func(x):
         if isinstance(x, float):
             u0 = UJ[:,0]*(x<0) + UJ[:,1]*(x>=0)
@@ -80,10 +80,7 @@ def Riemann(rhoJ,uJ,pJ):
             Nx = len(x)
             u0 = np.zeros((3,Nx))
             for i in range(Nx):
-                if x[i]<0:
-                    u0[:,i] = UJ[:,0]
-                else:
-                    u0[:,i] = UJ[:,1]
+                u0[:,i] = UJ[:,0]*(x[i]<0) + UJ[:,1]*(x[i]>=0)
         return u0
     return my_func, 'Riemann'
 
@@ -284,13 +281,27 @@ def RK1D(L, u, dt): # clone of RK4 with 1D data format
 # Conservative - primitive conversion
 # ----------------------------------------------------------------
 
-def Cons2Prim(v):
-    u = np.array([v[0,:], v[1,:]/v[0,:], (gam-1)*(v[2,:] - 0.5*v[1,:]**2/v[0,:])])
-    return u
+def Cons2Prim(u):
+    if isinstance(u[0], float):
+        rho = u[0]
+        v   = u[1]/u[0]
+        p   = (gam-1)*(u[2] - 0.5*u[1]**2/u[0])
+    else:
+        rho = u[0,:]
+        v   = u[1,:]/u[0,:]
+        p   = (gam-1)*(u[2,:] - 0.5*u[1,:]**2/u[0,:])
+    return np.array([rho, v, p])
 
 def Prim2Cons(u):
-    v = np.array([u[0,:], u[0,:]*u[1,:], 0.5*u[0,:]*u[1,:]**2 + u[2,:]/(gam-1)])
-    return v
+    if isinstance(u[0], float):
+        rho  = u[0]
+        rhov = u[0]*u[1]
+        E    = 0.5*u[0]*u[1]**2 + u[2]/(gam-1)
+    else:
+        rho  = u[0,:]
+        rhov = u[0,:]*u[1,:]
+        E    = 0.5*u[0,:]*u[1,:]**2 + u[2,:]/(gam-1)
+    return np.array([rho, rhov, E])
 
 # ----------------------------------------------------------------
 # Exact Riemann solution
@@ -298,16 +309,14 @@ def Prim2Cons(u):
 
 def RiemannExact(UJ, gam, t):
     # Initial function arguments
-    rhoL = UJ[0,0]
-    rhouL = UJ[1,0]
-    EL = UJ[2,0]
-    rhoR = UJ[0,1]
-    rhouR = UJ[1,1]
-    ER = UJ[2,1]
-    uL = rhouL/rhoL
-    pL = (gam-1)*(EL - 0.5*rhouL*uL)
-    uR = rhouR/rhoR
-    pR = (gam-1)*(ER - 0.5*rhouR*uR)
+    uprimL = Cons2Prim(UJ[:,0])
+    rhoL = uprimL[0]
+    uL = uprimL[1]
+    pL = uprimL[2]
+    uprimR = Cons2Prim(UJ[:,1])
+    rhoR = uprimR[0]
+    uR = uprimR[1]
+    pR = uprimR[2]
     
     # useful quantities (cf. Toro p. 119)
     aL = np.sqrt(gam*pL/rhoL)
@@ -374,16 +383,15 @@ def RiemannExact(UJ, gam, t):
     
     def sol(x):
         if isinstance(x, float):
-            UL = np.array([rholeft(x), rholeft(x)*uleft(x), 0.5*rholeft(x)*uleft(x)**2 + pleft(x)/(gam-1)])
-            UR = np.array([rhoright(x), rhoright(x)*uright(x), 0.5*rhoright(x)*uright(x)**2 + pright(x)/(gam-1)])
+            UL = Prim2Cons(np.array([rholeft(x),uleft(x),pleft(x)]))
+            UR = Prim2Cons(np.array([rhoright(x),uright(x),pright(x)]))
             u = UL[:,0]*(x<us*t) + UR[:,0]*(x>=us*t)
         else:
             Nx = len(x)
             u = np.zeros((3,Nx))
             for i in range(Nx):
-                UL = np.array([rholeft(x[i]), rholeft(x[i])*uleft(x[i]), 0.5*rholeft(x[i])*uleft(x[i])**2 + pleft(x[i])/(gam-1)])
-                UR = np.array([rhoright(x[i]), rhoright(x[i])*uright(x[i]), 0.5*rhoright(x[i])*uright(x[i])**2 + pright(x[i])/(gam-1)])
+                UL = Prim2Cons(np.array([rholeft(x[i]),uleft(x[i]),pleft(x[i])]))
+                UR = Prim2Cons(np.array([rhoright(x[i]),uright(x[i]),pright(x[i])]))
                 u[:,i] = UL[:,0]*(x[i]<us*t) + UR[:,0]*(x[i]>=us*t)
         return u
-    
     return sol

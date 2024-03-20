@@ -94,7 +94,7 @@ print('Terminated in '+str(n)+' iterations.')
 if pb == 'Density':
     utheo = lambda x: u0(x - t)
 elif pb == 'Riemann':
-    UJ = np.array([rhoJ, rhoJ*uJ, 0.5*rhoJ*uJ**2 + pJ/(gam-1)])
+    UJ = Prim2Cons(np.array([rhoJ, uJ, pJ]))
     utheo = RiemannExact(UJ, gam, t)
 
 # Plot final solution
