@@ -13,20 +13,20 @@ from euler_tests import *
 
 """
 # Custom job parameters (overwrites pre-defined test case)
-flux = LxW # LxF, Osher, LxW
-inter = DoNone # DoNone, WENO, WENO_Roe
-integ = RK1 # RK1, RK3, RK4 <!> RK4 requires smaller time-steps by a factor 2/3 (cf. CFL)
-# BC = PeriodicBC # OutgoingBC, PeriodicBC
-# u0, pb = Density() # Density(), Riemann(rhoJ,uJ,pJ)
-# xlims = np.array([0, 2]) # Physical domain
-# Tf = 2 # Final time
+flux = LxF # LxF, Osher, LxW
+inter = WENO_Roe # DoNone, WENO, WENO_Roe
+integ = RK4 # RK1, RK3, RK4 <!> RK4 requires smaller time-steps by a factor 2/3 (cf. CFL)
+BC = OutgoingBC # OutgoingBC, PeriodicBC
+u0, pb = Riemann(rhoJ,uJ,pJ) # Density(), Riemann(rhoJ,uJ,pJ)
+xlims = np.array([-0.5, 0.5]) # Physical domain
+Tf = 0.16 # Final time
 """
 
 # Graphics
-plots = 1 # 0, 1, 2, 3
+plots = 0 # 0, 1, 2, 3
 
 # Mesh size
-Nx = 200
+Nx = 512
 Co = 0.6 # CFL
 
 # ----------------------------------------------------------------
@@ -47,6 +47,8 @@ u = BC(cellav(u0, x, dx))
 vals, _ = EigA(u)
 amax = np.max(np.max(np.abs(vals)))
 dt = Co * dx/amax
+l_time = np.array([t])
+l_speed = np.array([amax])
 
 # Evolution right-hand side
 L = RHS(flux, inter, BC, dt, dx)
@@ -76,6 +78,8 @@ while t<Tf:
     vals, _ = EigA(u)
     amax = np.max(np.max(np.abs(vals)))
     dt = Co * dx/amax
+    l_time = np.append(l_time, [t])
+    l_speed = np.append(l_speed, [amax])
 
     # Graphics update
     if (plots > 0) and (time.time() - tPlot > 1.5):
@@ -89,6 +93,7 @@ while t<Tf:
 tEnd = time.time()
 print('Elapsed time is '+str(tEnd-tStart)+' seconds.')
 print('Terminated in '+str(n)+' iterations.')
+print('Max speed '+str(np.max(l_speed))+', growth ratio '+str(np.max(l_speed)/np.min(l_speed))+'.')
 
 # Exact solution
 if pb == 'Density':

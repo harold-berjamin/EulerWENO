@@ -7,7 +7,7 @@ inter = WENO_Roe # DoNone, WENO, WENO_Roe
 integ = RK4 # RK1, RK3, RK4 <!> RK4 requires smaller time-steps by a factor 2/3 (cf. CFL)
 
 # Test selection
-test = 2 # 1, 2
+test = 1 # 1, 2
 
 # Job parameters
 if test==1:
@@ -23,8 +23,6 @@ elif test==2:
     rhoJ = np.array([1, 0.125]) # rhoJ = np.array([1, 0.125])
     uJ = np.array([0, 0])       # uJ = np.array([0, 0])
     pJ = np.array([1, 0.1])     # pJ = np.array([1, 0.1])
-    """
-    """
     # Lax (see Shu, 1996)
     rhoJ = np.array([0.445, 0.5]) # rhoJ = np.array([0.445, 0.5])
     uJ = np.array([0.698, 0])     # uJ = np.array([0.698, 0])
