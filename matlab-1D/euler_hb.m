@@ -2,18 +2,18 @@
 format long
 
 % Job parameters
-plots = 1; % 0, 1, 2, 3
+plots = 0; % 0, 1, 2, 3
 flux = @LxF; % @LxF, @Osher
 inter = @WENO_Roe; % @None, @WENO, @WENO_Roe
 integ = @RK4; % @RK1, @RK3, @RK4
-BC = @OutgoingBC; % @OutgoingBC, @PeriodicBC
-u0 = @Riemann; % @Density, @Riemann
+BC = @PeriodicBC; % @OutgoingBC, @PeriodicBC
+u0 = @Density; % @Density, @Riemann
 % <!> @RK4 requires smaller time-steps by a factor 2/3 (cf. CFL section below)
 
 % Mesh size, final time
-xlims = [-0.5, 0.5];
-Nx = 200;
-Tf = 0.16;
+xlims = [-1, 1];
+Nx = 800;
+Tf = 2;
 
 global gam % heat capacity ratio
 gam = 1.4;
@@ -100,7 +100,7 @@ if isequal(u0,@Density)
     ierr = find((x>xlims(1)).*(x<xlims(end)));
     derr = u(:,ierr) - uth(:,ierr);
     one_err = [norm(derr(1,:)*dx,1), norm(derr(2,:)*dx,1), norm(derr(3,:)*dx,1)];
-    two_err = [norm(derr(1,:)*dx,2), norm(derr(2,:)*dx,2), norm(derr(3,:)*dx,2)];
+    two_err = [norm(derr(1,:)*dx^0.5,2), norm(derr(2,:)*dx^0.5,2), norm(derr(3,:)*dx^0.5,2)];
     inf_err = [norm(derr(1,:),Inf), norm(derr(2,:),Inf), norm(derr(3,:),Inf)];
     disp([one_err; two_err; inf_err]);
 end

@@ -26,7 +26,7 @@ Tf = 0.16 # Final time
 plots = 0 # 0, 1, 2, 3
 
 # Mesh size
-Nx = 512
+Nx = 800
 Co = 0.6 # CFL
 
 # ----------------------------------------------------------------
@@ -122,7 +122,7 @@ if pb == 'Density':
     ierr = (x>xlims[0])*(x<xlims[1])
     derr = u[:,ierr] - uth[:,ierr]
     one_err = np.array([np.linalg.norm(derr[0,:]*dx,1), np.linalg.norm(derr[1,:]*dx,1), np.linalg.norm(derr[2,:]*dx,1)])
-    two_err = np.array([np.linalg.norm(derr[0,:]*dx,2), np.linalg.norm(derr[1,:]*dx,2), np.linalg.norm(derr[2,:]*dx,2)])
+    two_err = np.array([np.linalg.norm(derr[0,:]*math.sqrt(dx),2), np.linalg.norm(derr[1,:]*math.sqrt(dx),2), np.linalg.norm(derr[2,:]*math.sqrt(dx),2)])
     inf_err = np.array([np.linalg.norm(derr[0,:],np.inf), np.linalg.norm(derr[1,:],np.inf), np.linalg.norm(derr[2,:],np.inf)])
     print('L1, L2, Linf errors')
     print(np.array([one_err, two_err, inf_err]))
